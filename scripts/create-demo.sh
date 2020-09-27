@@ -114,6 +114,14 @@ main() {
   # ..and assign the pipeline service account that role in the dev project
   oc adm policy add-cluster-role-to-user -n $dev_prj kn-deployer system:serviceaccount:$cicd_prj:pipeline
 
+  info "Setting image-puller permissions for other projecct service accounts into $cicd_prj"
+  arrPrjs=( ${dev_prj} ${stage_prj} )
+  arrSAs=( default pipeline builder )
+  for prj in "${arrPrjs[@]}"; do
+    for sa in "${arrSAs[@]}"; do
+      oc adm policy add-role-to-user system:image-puller system:serviceaccount:${prj}:${sa} -n ${cicd_prj}
+    done
+  done
   
   info "Deploying pipeline and tasks to $cicd_prj namespace"
   oc apply -f $DEMO_HOME/kube/tekton/tasks --recursive -n $cicd_prj
