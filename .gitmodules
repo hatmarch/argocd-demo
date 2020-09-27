@@ -1,0 +1,4 @@
+[submodule "coolstore-gitops"]
+	path = coolstore-gitops
+	url = https://github.com/hatmarch/coolstore-gitops
+	branch = master
