@@ -30,6 +30,9 @@ spec:
       default: empty-dir-volume
     - name: SERVICE_NAME
       description: The name of the knative service to deploy of the provided image
+    - name: KN_ACTION
+      description: Whether to create or update a kn-service
+      default: update
     - name: KN_ADDITIONAL_ARGS
       type: array
       description: "Additional Arguments to pass to knative (default: none)"
@@ -100,12 +103,14 @@ spec:
       value: $(params.SERVICE_NAME)
     - name: TARGET_PROJECT
       value: demo-dev
+    - name: ACTION
+      value: $(params.KN_ACTION)
     - name: CONCURRENCY_LIMIT
       value: "1"
     - name: ADDITIONAL_ARGS
       value: 
-      # - $(params.KN_ADDITIONAL_ARGS)
-      - -l
-      - "app.kubernetes.io/part-of=focus"
-      - -e 
-      - "mp.messaging.outgoing.payments.bootstrap.servers=my-cluster-kafka-bootstrap.demo-support:9092"
+      - $(params.KN_ADDITIONAL_ARGS)
+      # - -l
+      # - "app.kubernetes.io/part-of=focus"
+      # - -e 
+      # - "mp.messaging.outgoing.payments.bootstrap.servers=my-cluster-kafka-bootstrap.demo-support:9092"

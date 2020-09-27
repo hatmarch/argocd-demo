@@ -16,6 +16,16 @@ spec:
     value: "payment-service"
   - name: CACHE_VOLUME
     value: cache-vol
+  - name: SERVICE_NAME
+    value: payment
+  - name: KN_ACTION
+    value: create
+  - name: KN_ADDITIONAL_ARGS
+    value:
+      - -l
+      - "app.kubernetes.io/part-of=focus"
+      - -e 
+      - "mp.messaging.outgoing.payments.bootstrap.servers=my-cluster-kafka-bootstrap.argocd-demo-support:9092"
   resources:
   - name: app-image
     resourceRef:
