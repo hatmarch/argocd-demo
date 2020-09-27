@@ -192,7 +192,7 @@ main() {
 
   # FIXME: Shouldn't this line be codified in the gitops repo?  This might be necessary for bootstrapping, but after that...
   oc policy add-role-to-user edit system:serviceaccount:${ARGO_OPERATOR_PRJ}:argocd-application-controller -n $stage_prj
-  argocd app create coolstore-argo --repo http://gitea.$cicd_prj:3000/gogs/coolstore-gitops --path . --dest-namespace $stage_prj --dest-server https://kubernetes.default.svc \
+  argocd app create coolstore-argo --repo http://gitea.$cicd_prj:3000/gogs/coolstore-gitops --path kube --dest-namespace $stage_prj --dest-server https://kubernetes.default.svc \
     --directory-recurse --revision master --sync-policy automated --self-heal --auto-prune
   
   # NOTE: it's setup to autosync so this is not necessary
