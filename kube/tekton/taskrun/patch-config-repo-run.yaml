@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: patch-config-repo-run-
+spec:
+  taskRef:
+    name: update-config
+  workspaces:
+  - name: input
+    persistentVolumeClaim:
+      claimName: config-source-pvc
+  resources:
+    inputs:
+    - name: app-image
+      resourceRef: 
+        name: petclinic-image
+  params:
+  - name: IMAGE_TAG
+    value: 'hnkwj'
+  - name: PATH_CONTEXT
+    value: '.'
+  - name: PATCH_FILE
+    value: "app/deployment.yaml"
+  - name: GIT_SECRET_NAME
+    value: gitea-secret
+  - name: BRANCH_SUFFIX
+    value: 'hnkwj'

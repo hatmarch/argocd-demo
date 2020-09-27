@@ -1,0 +1,14 @@
+# WARNING: Do not create this resource directly with oc apply instead use the command
+#   sed "s/demo-cicd/$cicd_prj/g" $DEMO_HOME/kube/tekton/resources/payment-image.yaml | oc apply -f - -n $cicd_prj
+# where cicd_prj is set to the name of your cicd project
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: payment-image
+spec:
+  params:
+  - name: url
+# NOTE: This file is pre-processed by the cicd installation script and replaces "demo-cicd" with the proper
+# Demo Dev project name
+    value: image-registry.openshift-image-registry.svc:5000/demo-cicd/payment
+  type: image
