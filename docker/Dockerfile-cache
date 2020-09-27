@@ -1,0 +1,5 @@
+# For creating a cache container for use with "seed-cache-task-run.yaml"
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+
+# TODO: Update this with the directory where the mvn repo lives
+COPY ~/.m2 /home/jboss/.m2
