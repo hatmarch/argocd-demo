@@ -192,8 +192,12 @@ main() {
 
   # FIXME: Shouldn't this line be codified in the gitops repo?  This might be necessary for bootstrapping, but after that...
   oc policy add-role-to-user edit system:serviceaccount:${ARGO_OPERATOR_PRJ}:argocd-application-controller -n $stage_prj
+
+  # Create an initial deployment of the app into the staging environment
+  # NOTE: can't use directory-recurse with Kustomize based deployment or you'll get an error (as it tries to deploy Kustomize itself)
+  # See here for more info: https://github.com/argoproj/argo-cd/issues/3181
   argocd app create coolstore-argo --repo http://gitea.$cicd_prj:3000/gogs/coolstore-gitops --path kube --dest-namespace $stage_prj --dest-server https://kubernetes.default.svc \
-    --directory-recurse --revision master --sync-policy automated --self-heal --auto-prune
+    --directory-recurse=false --revision master --sync-policy automated --self-heal --auto-prune
   
   # NOTE: it's setup to autosync so this is not necessary
   # argocd app sync petclinic-argo
