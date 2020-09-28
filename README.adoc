@@ -46,6 +46,22 @@ If you want to uninstall all the supporting operators and CRDs, then you can run
 
 == Troubleshooting ==
 
+=== ArgoCD ===
+
+==== Command Line ====
+
+To trigger a sync and get verbose output
+
+----
+argocd app sync coolstore-argo --loglevel debug    
+----
+
+To change details about an existing deployment use the `argocd app set` command
+
+----
+argocd app set coolstore-argo --directory-recurse=false     
+----
+
 === MySQL ===
 
 You can test access to a MySQL database in an OpenShift cluster using the `Adminer` image.
