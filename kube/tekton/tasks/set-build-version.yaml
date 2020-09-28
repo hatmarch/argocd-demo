@@ -17,6 +17,14 @@ spec:
     type: string
     description: Whether we want to override the base build number.
     default: ""
+  - name: path-context
+    type: string
+    description: Location relative to the root of the workspace where the pom.xml can be found
+    default: ""
+  - name: repo-path-context
+    type: string
+    description: Location relative to the root of the maven-repo workspace where the repository is
+    default: ""
   results:
     - name: build-id
       description: ID of the current build
@@ -27,7 +35,7 @@ spec:
     # by looking into the context variable substitution.
     - name: generate-buildid
       image: gcr.io/tekton-releases/dogfooding/tkn
-      workingDir: $(workspaces.maven-source.path)
+      workingDir: $(workspaces.maven-source.path)/$(params.path-context)
       script: |
         #!/usr/bin/env sh
         echo "starting build number generation"
@@ -42,7 +50,7 @@ spec:
         echo ${BUILD_NUM} | tr -d "\n" | tee $(results.build-number.path)
     - name: get-base-version
       image: gcr.io/cloud-builders/mvn
-      workingDir: $(workspaces.maven-source.path)
+      workingDir: $(workspaces.maven-source.path)/$(params.path-context)
       script: |
         #!/usr/bin/env bash
         BASE_VERSION=$(params.base-version-override)
@@ -64,14 +72,14 @@ spec:
         echo -n "Generated build id: ${buildId}"
     - name: set-version
       image: gcr.io/cloud-builders/mvn
-      workingDir: $(workspaces.maven-source.path)
+      workingDir: $(workspaces.maven-source.path)/$(params.path-context)
       script: |
         #!/usr/bin/env bash
-        /usr/bin/mvn versions:set -Dmaven.repo.local=$(workspaces.maven-repo.path) \
+        /usr/bin/mvn versions:set -Dmaven.repo.local=$(workspaces.maven-repo.path)/$(params.repo-path-context) \
             -DnewVersion=`cat $(results.build-id.path)`
     - name: debug-version
       image: gcr.io/cloud-builders/mvn
-      workingDir: $(workspaces.maven-source.path)
+      workingDir: $(workspaces.maven-source.path)/$(params.path-context)
       script: |
         #!/usr/bin/env bash
         BASE_VERSION_DEBUG=`echo -e 'setns x=http://maven.apache.org/POM/4.0.0\ncat \
