@@ -18,5 +18,5 @@ spec:
     - name: TARGET_DIRECTORY
       value: "m2-cache"
     - name: SOURCE_IMAGE
-      value: "quay.io/mhildenb/demo-cache:latest"
+      value: "quay.io/mhildenb/argocd-demo-cache:latest"
 
