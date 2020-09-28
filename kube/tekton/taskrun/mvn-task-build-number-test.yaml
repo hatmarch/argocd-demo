@@ -1,4 +1,4 @@
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: TaskRun
 metadata:
   generateName: mvn-build-number-test-
@@ -8,16 +8,21 @@ spec:
   workspaces:
   - name: maven-repo
     persistentVolumeClaim:
-      claimName: maven-repo-pvc
+      claimName: cache-pvc
   - name: maven-source
     persistentVolumeClaim:
-      claimName: maven-source-pvc
+      claimName: workvol-pvc
+  params:
+  - name: path-context
+    value: "source/payment-service"
+  - name: repo-path-context
+    value: "m2-cache/repository"
   # inputs:
   #   # NOTE: You need to have first git cloned into the maven-source workspace for this to work
   #   params:
   #   - name: GOALS
   #     value:
-  #     - deploy
+  #     - deploy-
   #     - -DskipTests=true
   #     - -DaltDeploymentRepository=nexus::default::http://nexus:8081/repository/maven-releases/
   #     - -DaltSnapshotDeploymentRepository=nexus::default::http://nexus:8081/repository/maven-snapshots/
