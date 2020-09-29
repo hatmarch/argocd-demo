@@ -8,6 +8,7 @@ metadata:
 spec:
   workspaces:
   - name: local-workspace
+  - name: local-cache
   params:
     - name: GIT_REPO
       type: string
@@ -68,12 +69,26 @@ spec:
       value: "true"
     - name: submodules
       value: "false"
-  - name: build-image
+  - name: set-build-version
     taskRef:
-      kind: ClusterTask
-      name: jib-maven
+      name: set-build-version
     runAfter:
       - checkout
+    workspaces:
+    - name: maven-source
+      workspace: local-workspace
+    - name: maven-repo
+      workspace: local-cache
+    params:
+    - name: path-context
+      value: source/$(params.PATH_CONTEXT)
+    - name: repo-path-context
+      value: m2-cache/repository
+  - name: build-image
+    taskRef:
+      name: jib-maven
+    runAfter:
+      - set-build-version
     params:
     - name: DIRECTORY
       value: source/$(params.PATH_CONTEXT)
@@ -81,6 +96,8 @@ spec:
       value: $(params.CACHE_VOLUME)
     - name: INSECUREREGISTRY
       value: "true"
+    - name: IMAGE_TAG
+      value: $(tasks.set-build-version.results.build-number)
     resources:
       outputs:
       - name: image
@@ -101,6 +118,8 @@ spec:
     params:
     - name: SERVICE_NAME
       value: $(params.SERVICE_NAME)
+    - name: IMAGE_TAG
+      value: $(tasks.set-build-version.results.build-number)
     - name: TARGET_PROJECT
       value: demo-dev
     - name: ACTION

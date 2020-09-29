@@ -19,7 +19,7 @@ spec:
   - name: SERVICE_NAME
     value: payment
   - name: KN_ACTION
-    value: create
+    value: update
   - name: KN_ADDITIONAL_ARGS
     value:
       - -l
@@ -34,6 +34,9 @@ spec:
   - name: local-workspace
     persistentVolumeClaim:
       claimName: workvol-pvc
+  - name: local-cache
+    persistentVolumeClaim:
+      claimName: cache-pvc
   podTemplate:
     volumes:
     - name: cache-vol
