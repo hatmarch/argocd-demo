@@ -110,9 +110,14 @@ main() {
 
   info "Configure service account permissions for pipeline"
   # Add a cluster role that allows fined grained access to knative resources without granting edit
-  oc apply -f $DEMO_HOME/kube/tekton/roles/kn-deployer-role.yaml
+  oc apply -f $DEMO_HOME/kube/tekton/roles
   # ..and assign the pipeline service account that role in the dev project
   oc adm policy add-cluster-role-to-user -n $dev_prj kn-deployer system:serviceaccount:$cicd_prj:pipeline
+  oc adm policy add-cluster-role-to-user -n $cicd_prj ns-creator -z pipeline
+
+  # FIXME: Change to allow all serviceaccounts to pull from the cicd project
+  # oc adm policy add-role-to-group system:image-puller system:serviceaccounts -n ${cicd_prj}
+  oc adm policy add-role-to-group system:image-puller system:authenticated -n ${cicd_prj}
 
   info "Setting image-puller permissions for other projecct service accounts into $cicd_prj"
   arrPrjs=( ${dev_prj} ${stage_prj} )
@@ -146,7 +151,7 @@ main() {
   #   info "Skipping deploy to staging pipeline at user's request"
   # fi
   sed "s/demo-dev/$dev_prj/g" $DEMO_HOME/kube/tekton/pipelines/payment-pipeline.yaml | sed "s/demo-support/$sup_prj/g" | oc apply -f - -n $cicd_prj
-  sed "s/demo-cicd/$cicd_prj/g" $DEMO_HOME/kube/tekton/pipelines/deploy-payment-to-staging.yaml | oc apply -f - -n $cicd_prj
+  sed "s/demo-cicd/$cicd_prj/g" $DEMO_HOME/kube/tekton/pipelines/promote-payment-pipeline.yaml | oc apply -f - -n $cicd_prj
   # Install pipeline resources
   sed "s/demo-cicd/$cicd_prj/g" $DEMO_HOME/kube/tekton/resources/payment-image.yaml | oc apply -f - -n $cicd_prj
   
@@ -190,7 +195,7 @@ main() {
   argocd login $argocd_url --username admin --password $argocd_pwd --insecure
 
   echo "Creating argo configmaps and secrets based on current deployment"
-  cat <<EOF | oc apply -f -n $cicd_prj -
+  cat <<EOF | oc apply -n $cicd_prj -f -
 apiVersion: operators.coreos.com/v1alpha1
 apiVersion: v1
 kind: ConfigMap
@@ -198,14 +203,15 @@ metadata:
   name: argocd-env-configmap
 data:
   ARGOCD_SERVER: argocd-server.${ARGO_OPERATOR_PRJ}.svc.cluster.local
+  ARGOCD_EXTERNAL_HOSTNAME: ${argocd_url}
 EOF
 
-  cat << EOF | oc apply -f -n $cicd_prj -
+  cat << EOF | oc apply -n $cicd_prj -f -
 apiVersion: v1
 kind: Secret
 metadata:
   name: argocd-env-secret
-data:
+stringData:
   # choose one of username/password or auth token
   ARGOCD_USERNAME: admin
   ARGOCD_PASSWORD: ${argocd_pwd}

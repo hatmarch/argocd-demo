@@ -7,10 +7,12 @@ spec:
     name: create-pull-request
   params:
   - name: GIT_REPO_NAME
-    value: 'gogs/petclinic-config'
+    value: 'gogs/coolstore-gitops'
   - name: SOURCE_BRANCH
-    value: 'ci-hnkwj'
+    value: 'ci-mg494'
   - name: TARGET_BRANCH
-    value: 'uat'
+    value: 'master'
   - name: GIT_SECRET_NAME
     value: 'gitea-secret'
+  - name: GENERATE_PREVIEW_ENVIRONMENT
+    value: 'true'

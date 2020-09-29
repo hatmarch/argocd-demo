@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: promote-payment-pipeline-test-
+spec:
+  pipelineRef:
+    name: promote-payment-pipeline
+  resources:
+  - name: app-image
+    resourceRef:
+      name: payment-image
+  workspaces:
+  - name: local-config-source
+    persistentVolumeClaim:
+      claimName: config-source-pvc
+  params:
+  - name: BUILD_NUMBER
+    value: 'mg494'
+  - name: GENERATE_PREVIEW_ENVIRONMENT
+    value: "true"
+  - name: GITOPS_SOURCE_REVISION
+    value: test

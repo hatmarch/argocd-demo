@@ -1,0 +1,81 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: promote-payment-pipeline
+spec:
+  workspaces:
+  - name: local-config-source
+  resources:
+    - name: app-image
+      type: image
+  params:
+    - name: BUILD_NUMBER
+      default: latest 
+      type: string
+      description: The build number to be promoted to staging.  Tracks the latest image tag
+    - name: GITOPS_SOURCE_REVISION
+      default: master
+      type: string
+      description: The branch where the changes to be merged to GITOPS_TARGET_REVISION live.  Usually the same as the TARGET_REVISION
+    - name: GITOPS_TARGET_REVISION
+      default: master
+      type: string
+      description: The branch that should ultimately be merged into (and ArgoCD is monitoring)
+    - name: GENERATE_PREVIEW_ENVIRONMENT
+      default: "false"
+      type: string
+      description: Whether to create a preview environment for the ArgoCD branch
+  tasks:
+  - name: checkout-config
+    taskRef: 
+      kind: ClusterTask
+      name: internal-git-clone
+    workspaces:
+    - name: workvol
+      workspace: local-config-source
+    params:
+    - name: url
+      value: 'http://gitea:3000/gogs/coolstore-gitops.git'
+    - name: revision
+      value: $(params.GITOPS_SOURCE_REVISION)
+    - name: deleteExisting
+      value: "true"
+    - name: subdirectory
+      value: ""
+  - name: patch-config
+    taskRef: 
+      name: update-config
+    runAfter:
+    - checkout-config
+    workspaces:
+    - name: input
+      workspace: local-config-source
+    resources:
+      inputs:
+      - name: app-image
+        resource: app-image 
+    params:
+    - name: IMAGE_TAG
+      value: $(params.BUILD_NUMBER)
+    - name: PATH_CONTEXT
+      value: "kube"
+    - name: GIT_SECRET_NAME
+      value: "gitea-secret"
+    - name: BRANCH_SUFFIX
+      value: $(params.BUILD_NUMBER)
+  - name: create-pull-request
+    taskRef:
+      name: create-pull-request
+    runAfter:
+      - patch-config
+    params:
+    - name: GIT_REPO_NAME
+      value: 'gogs/coolstore-gitops'
+    - name: SOURCE_BRANCH
+      value: $(tasks.patch-config.results.branch-name)
+    - name: TARGET_BRANCH
+      value: $(params.GITOPS_TARGET_REVISION)
+    - name: GIT_SECRET_NAME
+      value: 'gitea-secret'
+    - name: GENERATE_PREVIEW_ENVIRONMENT
+      value: $(params.GENERATE_PREVIEW_ENVIRONMENT)

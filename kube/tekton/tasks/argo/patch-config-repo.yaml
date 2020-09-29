@@ -15,9 +15,6 @@ spec:
       default: latest 
     - name: PATH_CONTEXT
       description: The location relative to the start of the input workspace where the root of the config repo is.  
-    - name: PATCH_FILE
-      description: The file to patch relative to the PATH_CONTEXT (e.g. app/deployment.yaml)
-      default: "app/deployment.yaml"
     - name: BRANCH_SUFFIX
       description: The name of the branch to create in the parent repo and push the changes into.  Branch will be in the form ci-BRANCH_SUFFIX
       default: "test"
@@ -43,28 +40,21 @@ spec:
         echo ${BRANCH_NAME} | tr -d "\n" | tee $(results.branch-name.path)
     - name: update-deployment
       workingDir: $(workspaces.input.path)/$(params.PATH_CONTEXT)
-      image: quay.io/openshift/origin-cli:latest
+      image: quay.io/eformat/openshift-kustomize:latest
       script: |
         #!/usr/bin/env bash
 
         set -Eeuo pipefail
 
-        DEPLOY_FILE=$(params.PATCH_FILE)
-        if [[ ! -f ${DEPLOY_FILE} ]]; then
-          echo "ERROR: Could not find ${DEPLOY_FILE} at $(pwd)."
+        KUSTOMIZE_FILE=kustomization.yaml
+
+        if [[ ! -f ${KUSTOMIZE_FILE} ]]; then
+          echo "No ${KUSTOMIZE_FILE} file found at $(pwd) [Path context: $(params.PATH_CONTEXT)]"
           exit 1
         fi
-        
-        DEPLOY_CONTENTS=$(cat ${DEPLOY_FILE})
-        echo "Contents of $(pwd)/deployment.yaml are: ${DEPLOY_CONTENTS}"
 
-        # NOTE: start with cat and echo the file so that we can write back to it..otherwise it gets cleared before we start reading
-        echo "${DEPLOY_CONTENTS}" | oc patch --local=true -f - -o yaml -p \
-            '{"spec":{"template":{"spec":{"containers":[{"name":"petclinic", "image":"'"$(resources.inputs.app-image.url):$(params.IMAGE_TAG)"'" }]}}}}' \
-            | oc patch --local=true -f - -o yaml -p \
-            '{"spec":{"template":{"spec":{"containers":[{"name":"petclinic", "env":[{"name":"VERSION", "value": "'"$(params.IMAGE_TAG) petclinic-uat"'"}]}]}}}}' > ${DEPLOY_FILE}
-
-        echo "Contents after are: $(cat ${DEPLOY_FILE})"
+        kustomize edit set image payment/image="$(resources.inputs.app-image.url):$(params.IMAGE_TAG)"
+        echo -e "Contents after image kustomization are:\n $(cat ${KUSTOMIZE_FILE})"
     - name: checkin
       workingDir: $(workspaces.input.path)/$(params.PATH_CONTEXT)
       volumeMounts:
