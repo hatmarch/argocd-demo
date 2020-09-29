@@ -1,0 +1,30 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app.kubernetes.io/part-of: focus
+  name: payment
+spec:
+  template:
+    metadata:
+      annotations:
+        client.knative.dev/user-image: payment/image
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/part-of: focus
+      name: payment-1
+    spec:
+      containerConcurrency: 1
+      containers:
+      - env:
+        - name: mp.messaging.outgoing.payments.bootstrap.servers
+          value: my-cluster-kafka-bootstrap.argocd-demo-support:9092
+        image: payment/image
+        name: user-container
+        readinessProbe:
+          successThreshold: 1
+          tcpSocket:
+            port: 0
+        resources: {}
+      timeoutSeconds: 300

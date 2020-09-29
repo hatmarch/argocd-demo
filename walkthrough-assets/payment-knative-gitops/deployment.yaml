@@ -1,0 +1,28 @@
+apiVersion: sources.knative.dev/v1beta1
+kind: KafkaSource
+metadata:
+  labels:
+    app: kafka-source-orders
+    app.kubernetes.io/component: kafka-source-orders
+    app.kubernetes.io/instance: kafka-source-orders
+    app.kubernetes.io/part-of: focus
+  name: kafka-source-orders
+spec:
+  bootstrapServers:
+  - my-cluster-kafka-bootstrap.argocd-demo-support:9092
+  consumerGroup: payment-consumer-group
+  net:
+    sasl:
+      password: {}
+      user: {}
+    tls:
+      caCert: {}
+      cert: {}
+      key: {}
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: payment
+  topics:
+  - orders
