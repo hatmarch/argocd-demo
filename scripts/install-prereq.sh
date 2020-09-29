@@ -194,10 +194,6 @@ EOF
       # use the default parameter values
       oc process -f "$DEMO_HOME/kube/kafka/kafka-template.yaml" | oc apply -n $sup_prj -f -
 
-      # install the necessary kafka instance and topics
-      oc apply -f "$DEMO_HOME/kube/kafka/kafka-orders-topic.yaml" -n $sup_prj
-      oc apply -f "$DEMO_HOME/kube/kafka/kafka-payments-topic.yaml" -n $sup_prj
-
       # wait until the cluster is deployed
       echo "Waiting up to 30 minutes for kafka cluster to be ready"
       oc wait --for=condition=Ready kafka/my-cluster --timeout=30m -n $sup_prj
@@ -222,7 +218,6 @@ EOF
   echo "Waiting for the operator to install the Knative Event CRD"
   wait_for_crd "crd/knativeeventings.operator.knative.dev"
 
-  oc apply -f "$DEMO_HOME/kube/knative-eventing/knative-eventing.yaml" 
   echo "Waiting for the knative eventing instance to finish installing"
   oc wait --for=condition=InstallSucceeded knativeeventing/knative-eventing -n knative-eventing --timeout=6m
 

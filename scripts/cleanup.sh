@@ -4,7 +4,10 @@ set -Eeuo pipefail
 
 declare -r SCRIPT_DIR=$(cd -P $(dirname $0) && pwd)
 declare PROJECT_PREFIX="argocd-demo"
-declare ARGO_PROJECT="coolstore-argo"
+declare ARGO_APP="coolstore-argo"
+
+# project where the argo operator is installed (and where the argo server is running in cluster)
+declare ARGO_PROJECT="argocd"
 
 display_usage() {
 cat << EOF
@@ -82,9 +85,13 @@ main()
 
     get_and_validate_options "$@"
 
+    argocd_pwd=$(oc get secret argocd-cluster -n ${ARGO_PROJECT} -o jsonpath='{.data.admin\.password}' | base64 -d)
+    argocd_url=$(oc get route argocd-server -n ${ARGO_PROJECT} -o template --template='{{.spec.host}}')
+    argocd login $argocd_url --username admin --password $argocd_pwd --insecure
+
     # delete argocd integration
-    echo "Deleting argocd integration app ${ARGO_PROJECT}"
-    argocd app delete ${ARGO_PROJECT} || true
+    echo "Deleting argocd integration app ${ARGO_APP}"
+    argocd app delete ${ARGO_APP} || true
 
  
     if [[ -n "${full_flag:-}" ]]; then
@@ -124,7 +131,7 @@ main()
     fi
 
     # declare an array
-    arrSuffix=( "dev" "stage" "cicd" "support")
+    arrSuffix=( "dev" "stage" "cicd")
     
     # for loop that iterates over each element in arr
     for i in "${arrSuffix[@]}"
@@ -134,6 +141,9 @@ main()
     done
 
     if [[ -n "${full_flag:-}" ]]; then
+        echo "Removing support project"
+        oc delete project "${PROJECT_PREFIX}-support" || true
+
         echo "Cleaning up CRDs"
 
         # delete all CRDS that maybe have been left over from operators

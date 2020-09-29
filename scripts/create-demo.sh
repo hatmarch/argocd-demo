@@ -152,8 +152,7 @@ main() {
   
   # FIXME: Decide which repo we want to trigger/pull from
   # sed "s#https://github.com/spring-projects/spring-petclinic#http://$GOGS_HOSTNAME/gogs/spring-petclinic.git#g" $DEMO_HOME/kube/tekton/resources/petclinic-git.yaml | oc apply -f - -n $cicd_prj
-  oc apply -f $DEMO_HOME/kube/tekton/resources/petclinic-git.yaml -n $cicd_prj
-
+ 
   # Install pipeline triggers
   oc apply -f $DEMO_HOME/kube/tekton/triggers --recursive -n $cicd_prj
 
@@ -185,10 +184,32 @@ main() {
   #
   # Configure ArgoCD
   # 
-  echo "Configuring ArgoCD for project $stage_prj"
+  echo "Configuring ArgoCD for targeting project $stage_prj"
   argocd_pwd=$(oc get secret argocd-cluster -n ${ARGO_OPERATOR_PRJ} -o jsonpath='{.data.admin\.password}' | base64 -d)
   argocd_url=$(oc get route argocd-server -n ${ARGO_OPERATOR_PRJ} -o template --template='{{.spec.host}}')
   argocd login $argocd_url --username admin --password $argocd_pwd --insecure
+
+  echo "Creating argo configmaps and secrets based on current deployment"
+  cat <<EOF | oc apply -f -n $cicd_prj -
+apiVersion: operators.coreos.com/v1alpha1
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-env-configmap
+data:
+  ARGOCD_SERVER: argocd-server.${ARGO_OPERATOR_PRJ}.svc.cluster.local
+EOF
+
+  cat << EOF | oc apply -f -n $cicd_prj -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-env-secret
+data:
+  # choose one of username/password or auth token
+  ARGOCD_USERNAME: admin
+  ARGOCD_PASSWORD: ${argocd_pwd}
+EOF
 
   # FIXME: Shouldn't this line be codified in the gitops repo?  This might be necessary for bootstrapping, but after that...
   oc policy add-role-to-user edit system:serviceaccount:${ARGO_OPERATOR_PRJ}:argocd-application-controller -n $stage_prj
