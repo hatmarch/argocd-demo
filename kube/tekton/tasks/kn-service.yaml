@@ -13,12 +13,12 @@ spec:
 
   params:
   - name: kn-image
-    description: kn CLI container image to run this task
-    default: gcr.io/knative-releases/knative.dev/client/cmd/kn:latest
-    #default: quay.io/mhildenb/dev-demo-base
+    description: "kn CLI container image to run this task (NOTE: must have bash shell installed)"
+    default: quay.io/mhildenb/kn-bash:latest
+    # NOTE: the offical kn build does not have bash which is needed for argument manipulation below
   - name: ACTION
-    description: "The service action to take (NOTE: only create or update supported)"
-    default: update
+    description: "The service action to take.  If none specified this will be determined based on the existance of SERVICE_NAME (NOTE: only create or update supported)"
+    default: ""
   - name: SERVICE_NAME
     description: The name of the service being deployed
   - name: IMAGE_TAG
@@ -40,5 +40,25 @@ spec:
   steps:
   - name: kn
     image: "$(params.kn-image)"
-    command: ["/ko-app/kn"]
-    args: [ "service", "$(params.ACTION)", "$(params.SERVICE_NAME)", "-n" , "$(params.TARGET_PROJECT)", "--image", "$(resources.inputs.image.url):$(params.IMAGE_TAG)", "--concurrency-limit", "$(params.CONCURRENCY_LIMIT)", "--revision-name", "{{.Service}}-{{.Generation}}", "$(params.ADDITIONAL_ARGS[*])" ]
+    args:
+      - $(params.ADDITIONAL_ARGS)
+    script: |
+      #!/bin/bash
+      set -euxo pipefail
+
+      ADDITIONAL_ARGS=( "$@" )
+
+      ACTION="$(params.ACTION)"
+      if [[ -z "${ACTION}" ]]; then
+        echo "Determining action based on state of services in $(params.TARGET_PROJECT)"
+        if [[ -z "$(/ko-app/kn service describe $(params.SERVICE_NAME) -n $(params.TARGET_PROJECT) 2>/dev/null)" ]]; then
+          ACTION="create"
+        else
+          ACTION="update"
+        fi
+      fi
+
+      printf "Addl args are %s\n" "${ADDITIONAL_ARGS[@]}"
+
+      /ko-app/kn service ${ACTION} $(params.SERVICE_NAME) -n $(params.TARGET_PROJECT) --image "$(resources.inputs.image.url):$(params.IMAGE_TAG)" \
+        --concurrency-limit $(params.CONCURRENCY_LIMIT) --revision-name "{{.Service}}-{{.Generation}}" ${ADDITIONAL_ARGS[@]}

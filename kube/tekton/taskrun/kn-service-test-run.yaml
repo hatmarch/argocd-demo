@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: kn-service-test-run-
+spec:
+  taskRef:
+    kind: ClusterTask
+    name: kn-service
+  resources:
+    inputs:
+    - name: image
+      resourceRef: 
+        name: payment-image
+  params:
+  - name: IMAGE_TAG
+    value: 'b7tmf'
+  - name: SERVICE_NAME
+    value: 'payment-test'
+  - name: TARGET_PROJECT
+    value: 'argocd-demo-dev'
+#   - name: ACTION
+#     value: "create"
+#   - name: CONCURRENCY_LIMIT
+#     value: "100"
+  - name: ADDITIONAL_ARGS
+    value: 
+    - -l
+    - "app.kubernetes.io/part-of=focus"
+    - -e 
+    - "mp.messaging.outgoing.payments.bootstrap.servers=my-cluster-kafka-bootstrap.argocd-demo-support:9092"    
+

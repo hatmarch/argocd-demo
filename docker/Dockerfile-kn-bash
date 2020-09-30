@@ -1,0 +1,5 @@
+# This is a special container that is needed for how arguments are being determined
+# in the kn-service container
+FROM gcr.io/knative-releases/knative.dev/client/cmd/kn:latest
+
+RUN apk add bash
