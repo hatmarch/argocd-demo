@@ -9,12 +9,12 @@
 Make sure you commands in any shell prior to the demo from within the root of the git repo for this demo:
 
 ----
-docker run -it -v ~/.kube:/home/jboss/.kube -v ~/.oh-my-zsh:/home/jboss/.oh-my-zsh -v $(pwd):/projects/tekton-demo quay.io/mhildenb/tekton-demo-shell /bin/zsh
+docker run -it -v ~/.kube:/home/jboss/.kube -v ~/.oh-my-zsh:/home/jboss/.oh-my-zsh -v $(pwd):/projects/argocd-demo quay.io/mhildenb/argocd-demo-shell /bin/zsh
 ----
 
 Then run the following commands within docker
 ----
-cd /projects/tekton-demo
+cd /projects/argocd-demo
 . scripts/shell-setup.sh 
 ----
 
@@ -27,6 +27,22 @@ image:screen-setup.png[]
 == Intro to Coolstore and Argo
 
 == Initial Payment Service Build
+
+. get the gitea host
+----
+GITEA_HOST=$(oc get route gitea -n argocd-demo-cicd -o=jsonpath='{.spec.host}')
+----
+. log into gitea
+. edit the file at this address
+----
+echo "https://${GITEA_HOST}/gogs/coolstore/_edit/master/payment-service/src/main/java/com/redhat/cloudnative/PaymentResource.java"
+----
+. Change the output of the success and failure processing methods
++
+image:edit-payment-gitea.png[]
++
+. Add a commit message and checkin
+. In the second console window, show the triggered code pipeline
 
 == Export Infra
 
