@@ -217,8 +217,12 @@ stringData:
   ARGOCD_PASSWORD: ${argocd_pwd}
 EOF
 
-  # FIXME: Shouldn't this line be codified in the gitops repo?  This might be necessary for bootstrapping, but after that...
-  oc policy add-role-to-user edit system:serviceaccount:${ARGO_OPERATOR_PRJ}:argocd-application-controller -n $stage_prj
+  # FIXME: There might be a better way to do this, but since we want the controller to be able to create arbitrary namespaces
+  # we need to give it system admin access instead of just the stage project
+  # oc policy add-role-to-user edit system:serviceaccount:${ARGO_OPERATOR_PRJ}:argocd-application-controller -n $stage_prj
+  oc adm policy add-cluster-role-to-user cluster-admin -n ${ARGO_OPERATOR_PRJ} -z argocd-application-controller
+
+  # FIXME
 
   # Create an initial deployment of the app into the staging environment
   # NOTE: can't use directory-recurse with Kustomize based deployment or you'll get an error (as it tries to deploy Kustomize itself)

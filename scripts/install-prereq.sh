@@ -136,8 +136,26 @@ spec:
   server:
     route:
       enabled: true
-  # dex:
-  #   openShiftOAuth: true
+  controller: 
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2536Mi
+      requests:
+        cpu: 500m
+        memory: 556Mi
+  dex:
+    image: quay.io/redhat-cop/dex
+    openShiftOAuth: true
+    version: v2.22.0-openshift
+  rbac:
+    defaultPolicy: 'role:admin'
+    # FIXME: Making anyone who can log into argo an admin as the following does not appear 
+    # to work as advertised here: https://argocd-operator.readthedocs.io/en/latest/reference/argocd/#dex-openshift-oauth-example
+    # defaultPolicy: 'role:readonly'
+    # policy: |
+    #   g, system:cluster-admins, role:admin
+    # scopes: '[groups]'
 EOF
 
   declare ARGO_SERVER_DEPLOY="deployment/argocd-server"
