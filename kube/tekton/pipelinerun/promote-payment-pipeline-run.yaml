@@ -15,8 +15,8 @@ spec:
       claimName: config-source-pvc
   params:
   - name: BUILD_NUMBER
-    value: 'mg494'
+    value: 'initial'
   - name: GENERATE_PREVIEW_ENVIRONMENT
     value: "true"
   - name: GITOPS_SOURCE_REVISION
-    value: test
+    value: master
