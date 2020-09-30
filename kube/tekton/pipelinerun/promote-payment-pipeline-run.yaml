@@ -15,8 +15,8 @@ spec:
       claimName: config-source-pvc
   params:
   - name: BUILD_NUMBER
-    value: 'initial'
+    value: 'zsjcz'
   - name: GENERATE_PREVIEW_ENVIRONMENT
     value: "true"
   - name: GITOPS_SOURCE_REVISION
-    value: master
+    value: serverless

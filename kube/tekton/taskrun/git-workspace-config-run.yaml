@@ -4,16 +4,17 @@ metadata:
   generateName: git-workspace-config-run-
 spec:
   taskRef:
-    name: git-clone
+    kind: ClusterTask
+    name: internal-git-clone
   workspaces:
-  - name: output
+  - name: workvol
     persistentVolumeClaim:
       claimName: config-source-pvc
   params:
   - name: url
-    value: 'http://gitea.argocd-demo-cicd:3000/gogs/coolstore-gitops.git'
+    value: 'http://gitea:3000/gogs/coolstore-gitops.git'
   - name: revision
-    value: 'uat'
+    value: 'serverless'
   - name: message
     value: 'built by task run'
   # by setting subdirectory parameters to ""
