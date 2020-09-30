@@ -24,6 +24,33 @@ image:screen-setup.png[]
 
 ****
 
+== Intro to Coolstore and Argo
+
+== Initial Payment Service Build
+
+== Export Infra
+
+. Run the following command to export the knative service
++
+----
+kn service export payment -n argocd-demo-dev -o yaml > /tmp/ksvc.yaml
+----
++
+. Run the following command to export the knative event source
++
+----
+oc get kafkasource kafka-source-orders --export -o yaml -n argocd-demo-dev > /tmp/ks.yaml
+----
++
+. Log into the in-cluster gogs repo
++
+. Edit the output of both scripts to remove runtime information (managed fields, metadata, image) and paste into the following of the `test` branch of the `coolstore-config` repo
+** ks.yaml -> kube/payment/deployment.yaml
+** ksvc.yaml -> kube/payment/service.yaml
+
+
+== [red]#OLD STUFF# ==
+
 == Tasks and Task Run == 
 
 . `Task` Show the yaml for `$DEMO_HOME/kube/tekton/tasks/s2i-tomcat-8.yaml`
