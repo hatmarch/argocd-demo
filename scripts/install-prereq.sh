@@ -218,6 +218,7 @@ EOF
   echo "Waiting for the operator to install the Knative Event CRD"
   wait_for_crd "crd/knativeeventings.operator.knative.dev"
 
+  oc apply -f "$DEMO_HOME/kube/knative-eventing/knative-eventing.yaml" 
   echo "Waiting for the knative eventing instance to finish installing"
   oc wait --for=condition=InstallSucceeded knativeeventing/knative-eventing -n knative-eventing --timeout=6m
 
