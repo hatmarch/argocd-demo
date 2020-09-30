@@ -13,15 +13,13 @@ spec:
     inputs:
     - name: app-image
       resourceRef: 
-        name: petclinic-image
+        name: payment-image
   params:
   - name: IMAGE_TAG
-    value: 'hnkwj'
+    value: 'zsjcz'
   - name: PATH_CONTEXT
-    value: '.'
-  - name: PATCH_FILE
-    value: "app/deployment.yaml"
+    value: 'kube'
   - name: GIT_SECRET_NAME
     value: gitea-secret
   - name: BRANCH_SUFFIX
-    value: 'hnkwj'
+    value: 'test-run'

@@ -63,20 +63,23 @@ spec:
 
         set -Eeuo pipefail
 
-        PATCH_FILE=cm-patch.yaml
-        if [[ ! -f ${PATCH_FILE} ]]; then
-          echo "ERROR: Could not find ${PATCH_FILE} at $(pwd)."
-          exit 1
-        fi
-        
-        PATCH_CONTENTS=$(cat ${PATCH_FILE})
-        echo "Contents of $(pwd)/${PATCH_FILE} are: ${PATCH_CONTENTS}"
+        # FIXME: Expose these as arguments
+        POTENTIAL_PATCH_FILES=( cm-patch.yaml kafka-event-patch.yaml )
+        for PATCH_FILE in "${POTENTIAL_PATCH_FILES[@]}"; do
+          if [[ ! -f ${PATCH_FILE} ]]; then
+            echo "WARNING: Could not find ${PATCH_FILE} at $(pwd)."
+            continue
+          fi
 
-        echo "Adding suffix to topic names representing this build"
-        # remove -PATCH with the current image_tag (build number)
-        sed -i.bak "s/-PATCH/-$(params.IMAGE_TAG)/g" cm-patch.yaml
-
-        echo -e "Contents after are: $(cat ${PATCH_FILE})\n"
+          PATCH_CONTENTS=$(cat ${PATCH_FILE})
+          echo "Contents of $(pwd)/${PATCH_FILE} are: ${PATCH_CONTENTS}"
+  
+          echo "Adding suffix to topic names representing this build"
+          # remove -PATCH with the current image_tag (build number)
+          sed -i.bak "s/-PATCH/-$(params.IMAGE_TAG)/g" ${PATCH_FILE}
+  
+          echo -e "Contents after are: $(cat ${PATCH_FILE})\n"
+        done
     - name: checkin
       workingDir: $(workspaces.input.path)/$(params.PATH_CONTEXT)
       volumeMounts:
