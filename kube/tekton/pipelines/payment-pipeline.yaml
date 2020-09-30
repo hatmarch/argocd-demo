@@ -32,8 +32,8 @@ spec:
     - name: SERVICE_NAME
       description: The name of the knative service to deploy of the provided image
     - name: KN_ACTION
-      description: Whether to create or update a kn-service
-      default: update
+      description: Whether to create or update a kn-service (leave black to let the pipeline decide the best course of action)
+      default: ""
     - name: KN_ADDITIONAL_ARGS
       type: array
       description: "Additional Arguments to pass to knative (default: none)"

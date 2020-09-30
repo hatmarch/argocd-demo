@@ -6,11 +6,11 @@ metadata:
 spec:
   serviceAccountName: pipeline
   triggers:
-    - name: petclinic-webhook
+    - name: coolstore-webhook
       bindings:
       - name: gogs-triggerbinding
       template:
-        name: petclinic-trigger-template
+        name: payment-trigger-template
 ---
 apiVersion: route.openshift.io/v1
 kind: Route

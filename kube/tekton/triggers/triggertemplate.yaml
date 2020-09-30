@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
-  name: petclinic-trigger-template
+  name: payment-trigger-template
 spec:
   params:
   - name: gitrevision
@@ -19,12 +19,12 @@ spec:
   - apiVersion: tekton.dev/v1alpha1
     kind: PipelineRun
     metadata:
-      generateName: petclinic-dev-pipeline-tomcat-workspace-triggered-run-
+      generateName: payment-pipeline-triggered-run-
       labels:
-        tekton.dev/pipeline: petclinic-dev-pipeline-tomcat-workspace
+        tekton.dev/pipeline: payment-pipeline
     spec:
       pipelineRef:
-        name: petclinic-dev-pipeline-tomcat-workspace
+        name: payment-pipeline
       params:
       - name: GIT_REPO
         value: $(params.gitrepositoryurl)
@@ -32,14 +32,31 @@ spec:
         value: $(params.gitrevision)
       - name: GIT_MESSAGE
         value: $(params.message)
+      - name: PATH_CONTEXT
+        value: "payment-service"
+      - name: CACHE_VOLUME
+        value: cache-vol
+      - name: SERVICE_NAME
+        value: payment
+      - name: KN_ADDITIONAL_ARGS
+        value: 
+          - -l
+          - "app.kubernetes.io/part-of=focus"
+          - -e 
+          - "mp.messaging.outgoing.payments.bootstrap.servers=my-cluster-kafka-bootstrap.argocd-demo-support:9092"    
       resources:
       - name: app-image
         resourceRef:
-          name: petclinic-image
+          name: payment-image
       workspaces:
-      - name: local-maven-source
+      - name: local-workspace
         persistentVolumeClaim:
-          claimName: maven-source-pvc
-      - name: local-maven-repo
+          claimName: workvol-pvc
+      - name: local-cache
         persistentVolumeClaim:
-          claimName: maven-repo-pvc
+          claimName: cache-pvc
+      podTemplate:
+        volumes:
+        - name: cache-vol
+          persistentVolumeClaim:
+            claimName: cache-pvc
