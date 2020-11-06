@@ -8,7 +8,7 @@ spec:
   triggers:
     - name: coolstore-webhook
       bindings:
-      - name: gogs-triggerbinding
+      - ref: gogs-triggerbinding
       template:
         name: payment-trigger-template
 ---
