@@ -11,3 +11,9 @@ RUN cd /usr/local/bin && curl -s "https://raw.githubusercontent.com/\
 kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash -s 3.6.1
 
 USER jboss
+
+# this is done in the base image already (to support the demo shell images too), but for those that make
+# local changes to .zshrc they should not have to rebuild the base
+COPY .zshrc.example $HOME/.zshrc
+
+ENV DEMO_HOME /workspaces/argocd-demo

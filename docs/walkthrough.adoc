@@ -9,13 +9,7 @@
 Make sure you commands in any shell prior to the demo from within the root of the git repo for this demo:
 
 ----
-docker run -it -v ~/.kube:/home/jboss/.kube -v ~/.oh-my-zsh:/home/jboss/.oh-my-zsh -v $(pwd):/projects/argocd-demo quay.io/mhildenb/argocd-demo-shell /bin/zsh
-----
-
-Then run the following commands within docker
-----
-cd /projects/argocd-demo
-. scripts/shell-setup.sh 
+docker run -it -v ~/.kube:/home/jboss/.kube -v ~/.oh-my-zsh:/home/jboss/.oh-my-zsh -v $(pwd):/workspaces/argocd-demo -w workspaces/argocd-demo quay.io/mhildenb/argocd-demo-shell /bin/zsh
 ----
 
 Setup your windows something like this:
