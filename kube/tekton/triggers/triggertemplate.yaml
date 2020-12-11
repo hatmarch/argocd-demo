@@ -27,11 +27,11 @@ spec:
         name: payment-pipeline
       params:
       - name: GIT_REPO
-        value: $(params.gitrepositoryurl)
+        value: $(tt.params.gitrepositoryurl)
       - name: GIT_REVISION
-        value: $(params.gitrevision)
+        value: $(tt.params.gitrevision)
       - name: GIT_MESSAGE
-        value: $(params.message)
+        value: $(tt.params.message)
       - name: PATH_CONTEXT
         value: "payment-service"
       - name: CACHE_VOLUME
