@@ -86,13 +86,15 @@ main()
     get_and_validate_options "$@"
 
     if [[ -n "$(oc get project ${ARGO_PROJECT} 2>/dev/null)" ]]; then
-        argocd_pwd=$(oc get secret argocd-cluster -n ${ARGO_PROJECT} -o jsonpath='{.data.admin\.password}' | base64 -d)
-        argocd_url=$(oc get route argocd-server -n ${ARGO_PROJECT} -o template --template='{{.spec.host}}')
-        argocd login $argocd_url --username admin --password $argocd_pwd --insecure
+        if [[ -n "$(oc get secret argocd-cluster -n ${ARGO_PROJECT} 2>/dev/null)" ]]; then
+            argocd_pwd=$(oc get secret argocd-cluster -n ${ARGO_PROJECT} -o jsonpath='{.data.admin\.password}' | base64 -d)
+            argocd_url=$(oc get route argocd-server -n ${ARGO_PROJECT} -o template --template='{{.spec.host}}')
+            argocd login $argocd_url --username admin --password $argocd_pwd --insecure
 
-        # delete argocd integration
-        echo "Deleting argocd integration app ${ARGO_APP}"
-        argocd app delete ${ARGO_APP} --cascade=false || true
+            # delete argocd integration
+            echo "Deleting argocd integration app ${ARGO_APP}"
+            argocd app delete ${ARGO_APP} --cascade=false || true
+        fi
     fi
 
  
@@ -112,6 +114,7 @@ main()
         remove-crds argo || true
 
         echo "Uninstalling knative eventing"
+        oc delete knativekafka --all -n knative-eventing || true
         oc delete knativeeventings.operator.knative.dev knative-eventing -n knative-eventing || true
         oc delete namespace knative-eventing || true
 
@@ -122,7 +125,7 @@ main()
         oc delete namespace knative-serving --wait=false || true
 
         # uninstall operators without special removal requirements
-        declare OTHER_OPERATORS=( openshift-pipelines-operator-rh amq-streams knative-kafka-operator )
+        declare OTHER_OPERATORS=( openshift-pipelines-operator-rh amq-streams )
         for OPERATOR in "${OTHER_OPERATORS[@]}"; do
             remove-operator ${OPERATOR} || true
         done
