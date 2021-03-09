@@ -89,7 +89,7 @@ metadata:
   name: openshift-pipelines-operator-rh
   namespace: openshift-operators
 spec:
-  channel: ocp-4.5
+  channel: stable
   installPlanApproval: Automatic
   name: openshift-pipelines-operator-rh
   source: redhat-operators
@@ -194,8 +194,6 @@ EOF
   # install the kafka operator (AMQStreams)
   oc apply -f "$DEMO_HOME/kube/kafka/subscription.yaml" 
 
-  oc apply -f "$DEMO_HOME/kube/kafka-eventing/subscription.yaml"
-
   #
   # Install Kafka Instances
   #
@@ -242,7 +240,7 @@ EOF
 
   # NOTE: kafka eventing needs to be installed in same project as knative eventing (this is baked into the yaml) but it also
   # needs to properly reference the cluster that we'll be using
-  sed "s#support-prj#${sup_prj}#" $DEMO_HOME/kube/kafka-eventing/kafka-eventing.yaml | oc apply -f -
+  sed "s#support-prj#${sup_prj}#" $DEMO_HOME/kube/knative-eventing/kafka-eventing.yaml | oc apply -f -
 
   # echo "Installing CodeReady Workspaces"
   # ${SCRIPT_DIR}/install-crw.sh codeready
