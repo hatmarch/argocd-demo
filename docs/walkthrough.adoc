@@ -104,6 +104,7 @@ In this section we'll return to our development project, add a knative eventing 
 . Fill in the following Kafka SOURCE:
 +
 image:kafka-source.png[]
+image:kafka-source-2.png[]
 +
 . Show the service starting up from the topology view
 . Refresh the order details page on coolstore.  Order should now be processed
@@ -123,12 +124,23 @@ oc exec -c kafka my-cluster-kafka-0 -n argocd-demo-support -- /opt/kafka/bin/kaf
 oc exec -c kafka my-cluster-kafka-0 -n argocd-demo-support -- /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic payments
 ----
 +
-. From the main shell, run the following command to test the service
+. Post to kafka
 +
+----
+echo '{"orderId": "12321","total": "232.23", "creditCard": {"number":"4232454678667866","expiration": "04/22","nameOnCard": "Jane G Doe"}, "billingAddress": "123 Anystreet, Pueblo, CO 32213", "name": "Jane Doe"}' | oc exec -i -c kafka my-cluster-kafka-0 -n argocd-demo-support -- /opt/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic orders
+----
++
+[NOTE]
+====
+Instead of posting the order to kafka, instead, from the main shell, run the following command to call the service directly
+
 ----
 KN_ROUTE=
 curl -X POST -H "Content-Type: application/json" -d @$DEMO_HOME/walkthrough-assets/order-payload.json $KN_ROUTE
 ----
+
+====
+
 
 == Try to deploy our new image with gitops
 
