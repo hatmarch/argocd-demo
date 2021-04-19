@@ -114,14 +114,20 @@ main()
         remove-crds argo || true
 
         echo "Uninstalling knative eventing"
-        oc delete knativekafka --all -n knative-eventing || true
+        oc delete knativekafkas.operator.serverless.openshift.io knative-kafka -n knative-eventing || true
         oc delete knativeeventings.operator.knative.dev knative-eventing -n knative-eventing || true
+        
         oc delete namespace knative-eventing || true
 
         echo "Uninstalling knative serving"
+        # route is the owner of any ingresses.networking.internal.knative.dev
+        oc delete route --all -n knative-serving || true
+        oc delete ingresses.networking.internal.knative.dev --all -n knative-serving || true
         oc delete knativeservings.operator.knative.dev knative-serving -n knative-serving || true
+ 
         # note, it takes a while to remove the namespace.  Move on to other things before we wait for the removal
         # of this project below
+        # oc delete all --all -n knative-serving || true
         oc delete namespace knative-serving --wait=false || true
 
         # uninstall operators without special removal requirements
