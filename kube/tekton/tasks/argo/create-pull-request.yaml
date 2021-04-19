@@ -103,6 +103,11 @@ spec:
         curl -X POST -H "Content-Type: application/json" -d @"${PAYLOAD_FILE}" ${PULLREQUEST_API_URL}
     - name: generate-preview-environment
       image: argoproj/argocd:$(params.ARGO_CD_VERSION)
+      securityContext:
+        # This container normally runs as argocd:argocd but if we don't make it part of the root group
+        # it won't get access to the .kube in the tekton home directory since the first task ran as root
+        # See also: https://github.com/tektoncd/pipeline/blob/main/docs/auth.md#unsuccessful-cred-copy-warning
+        runAsGroup: 0
       script: |
         if [ $(params.GENERATE_PREVIEW_ENVIRONMENT) != "true" ]; then
           echo "Not generating a preview environment for pull request on $(params.SOURCE_BRANCH)"
