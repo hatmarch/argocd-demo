@@ -7,7 +7,7 @@ declare USER=""
 declare PASSWORD=""
 declare slack_webhook_url=""
 declare INSTALL_PREREQ=""
-declare ARGO_OPERATOR_PRJ="argocd"
+declare ARGO_OPERATOR_PRJ="openshift-gitops"
 
 display_usage() {
 cat << EOF
@@ -190,8 +190,8 @@ main() {
   # Configure ArgoCD
   # 
   echo "Configuring ArgoCD for targeting project $stage_prj"
-  argocd_pwd=$(oc get secret argocd-cluster -n ${ARGO_OPERATOR_PRJ} -o jsonpath='{.data.admin\.password}' | base64 -d)
-  argocd_url=$(oc get route argocd-server -n ${ARGO_OPERATOR_PRJ} -o template --template='{{.spec.host}}')
+  argocd_pwd=$(oc get secret openshift-gitops-cluster -n ${ARGO_OPERATOR_PRJ} -o jsonpath='{.data.admin\.password}' | base64 -d)
+  argocd_url=$(oc get route openshift-gitops-server -n ${ARGO_OPERATOR_PRJ} -o template --template='{{.spec.host}}')
   argocd login $argocd_url --username admin --password $argocd_pwd --insecure
 
   echo "Creating argo configmaps and secrets based on current deployment"
@@ -202,7 +202,7 @@ kind: ConfigMap
 metadata:
   name: argocd-env-configmap
 data:
-  ARGOCD_SERVER: argocd-server.${ARGO_OPERATOR_PRJ}.svc.cluster.local
+  ARGOCD_SERVER: openshift-gitops-server.${ARGO_OPERATOR_PRJ}.svc.cluster.local
   ARGOCD_EXTERNAL_HOSTNAME: ${argocd_url}
 EOF
 
@@ -220,7 +220,7 @@ EOF
   # FIXME: There might be a better way to do this, but since we want the controller to be able to create arbitrary namespaces
   # we need to give it system admin access instead of just the stage project
   # oc policy add-role-to-user edit system:serviceaccount:${ARGO_OPERATOR_PRJ}:argocd-application-controller -n $stage_prj
-  oc adm policy add-cluster-role-to-user cluster-admin -n ${ARGO_OPERATOR_PRJ} -z argocd-application-controller
+  oc adm policy add-cluster-role-to-user cluster-admin -n ${ARGO_OPERATOR_PRJ} -z openshift-gitops-argocd-application-controller
 
   # FIXME
 

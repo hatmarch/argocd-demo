@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-declare argo_prj=argocd
+declare argo_prj=openshift-gitops
 declare -r SCRIPT_DIR=$(cd -P $(dirname $0) && pwd)
 
 display_usage() {
@@ -10,7 +10,7 @@ cat << EOF
 $0: Install GitOps (Argo) Demo Prerequisites --
 
   Usage: ${0##*/} [ OPTIONS ]
-    -a <TEXT>  [optional] The name of the project where argocd operator will be installed (defaults to argocd)
+    -a <TEXT>  [optional] The name of the project where argocd operator will be installed (defaults to openshift-gitops)
     -s <TEXT>  [required] The name of the support project (where the kafka cluster will eventually go)
     -k         [optional] Whether to actually create a kafka cluster in the support project
 
@@ -96,69 +96,25 @@ spec:
   sourceNamespace: openshift-marketplace
 EOF
 
-  oc get ns $argo_prj 2>/dev/null  || { 
-      oc new-project $argo_prj 
-  }
-  sleep 2
-
-  # install operator group
-  cat <<EOF | oc apply -n $argo_prj -f -
-apiVersion: operators.coreos.com/v1
-kind: OperatorGroup
-metadata:
-  name: argocd-og
-spec:
-  targetNamespaces:
-  - $argo_prj
-EOF
-
-  cat <<EOF | oc apply -n $argo_prj -f -
+  cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: argocd-operator
+  name: openshift-gitops-operator
+  namespace: openshift-operators
+  labels:
+    operators.coreos.com/openshift-gitops-operator.openshift-operators: ''
 spec:
-  channel: alpha
+  channel: stable
   installPlanApproval: Automatic
-  name: argocd-operator
-  source: community-operators
+  name: openshift-gitops-operator
+  source: redhat-operators
   sourceNamespace: openshift-marketplace
 EOF
 
   wait_for_crd "crd/argocds.argoproj.io" $argo_prj
 
-  cat <<EOF | oc apply -n $argo_prj -f -
-apiVersion: argoproj.io/v1alpha1
-kind: ArgoCD
-metadata:
-  name: argocd
-spec:
-  server:
-    route:
-      enabled: true
-  controller: 
-    resources:
-      limits:
-        cpu: 1000m
-        memory: 2536Mi
-      requests:
-        cpu: 500m
-        memory: 556Mi
-  dex:
-    image: quay.io/redhat-cop/dex
-    openShiftOAuth: true
-    version: v2.22.0-openshift
-  rbac:
-    defaultPolicy: 'role:admin'
-    # FIXME: Making anyone who can log into argo an admin as the following does not appear 
-    # to work as advertised here: https://argocd-operator.readthedocs.io/en/latest/reference/argocd/#dex-openshift-oauth-example
-    # defaultPolicy: 'role:readonly'
-    # policy: |
-    #   g, system:cluster-admins, role:admin
-    # scopes: '[groups]'
-EOF
-
-  declare ARGO_SERVER_DEPLOY="deployment/argocd-server"
+  declare ARGO_SERVER_DEPLOY="deployment/openshift-gitops-server"
 
   echo -n "Waiting for the ArgoCD server to appear."
   while [ -z "$(oc get ${ARGO_SERVER_DEPLOY} -n ${argo_prj} 2>/dev/null)" ]; do
