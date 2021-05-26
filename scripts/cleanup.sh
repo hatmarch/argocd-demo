@@ -7,7 +7,7 @@ declare PROJECT_PREFIX="argocd-demo"
 declare ARGO_APP="coolstore-argo"
 
 # project where the argo operator is installed (and where the argo server is running in cluster)
-declare ARGO_PROJECT="argocd"
+declare ARGO_PROJECT="openshift-gitops"
 
 display_usage() {
 cat << EOF
@@ -86,9 +86,9 @@ main()
     get_and_validate_options "$@"
 
     if [[ -n "$(oc get project ${ARGO_PROJECT} 2>/dev/null)" ]]; then
-        if [[ -n "$(oc get secret argocd-cluster -n ${ARGO_PROJECT} 2>/dev/null)" ]]; then
-            argocd_pwd=$(oc get secret argocd-cluster -n ${ARGO_PROJECT} -o jsonpath='{.data.admin\.password}' | base64 -d)
-            argocd_url=$(oc get route argocd-server -n ${ARGO_PROJECT} -o template --template='{{.spec.host}}')
+        if [[ -n "$(oc get secret openshift-gitops-cluster -n ${ARGO_PROJECT} 2>/dev/null)" ]]; then
+            argocd_pwd=$(oc get secret openshift-gitops-cluster -n ${ARGO_PROJECT} -o jsonpath='{.data.admin\.password}' | base64 -d)
+            argocd_url=$(oc get route openshift-gitops-server -n ${ARGO_PROJECT} -o template --template='{{.spec.host}}')
             argocd login $argocd_url --username admin --password $argocd_pwd --insecure
 
             # delete argocd integration
@@ -104,14 +104,9 @@ main()
         oc delete clusterrole gitea-operator || true
         remove-crds gitea || true
 
-        remove-operator argocd-operator argocd || true
-
         echo "Deleting any remaining argocd applications before deleting namespace and CRDs"
-        oc delete application --all -n argocd || true
-
-        oc delete project argocd || true
-
-        remove-crds argo || true
+        oc delete application --all -n ${ARGO_PROJECT} || true
+        oc delete argocd --all -n ${ARGO_PROJECT}
 
         echo "Uninstalling knative eventing"
         oc delete knativekafkas.operator.serverless.openshift.io knative-kafka -n knative-eventing || true
@@ -131,10 +126,13 @@ main()
         oc delete namespace knative-serving --wait=false || true
 
         # uninstall operators without special removal requirements
-        declare OTHER_OPERATORS=( openshift-pipelines-operator-rh amq-streams )
+        declare OTHER_OPERATORS=( openshift-gitops-operator openshift-pipelines-operator-rh amq-streams )
         for OPERATOR in "${OTHER_OPERATORS[@]}"; do
             remove-operator ${OPERATOR} || true
         done
+
+        # is this necessary
+      # oc delete project ${ARGO_PROJECT} || true
 
         # actually wait for knative-serving to finish being deleted before we remove the operator
         oc delete namespace knative-serving || true
@@ -158,7 +156,7 @@ main()
         echo "Cleaning up CRDs"
 
         # delete all CRDS that maybe have been left over from operators
-        CRDS=( "kafka.strimzi.io" "knative.dev" "tekton.dev" )
+        CRDS=( "kafka.strimzi.io" "knative.dev" "tekton.dev" "argo" )
         for CRD in "${CRDS[@]}"; do
             remove-crds ${CRD} || true
         done
