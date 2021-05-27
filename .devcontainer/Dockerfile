@@ -10,6 +10,11 @@ RUN curl -SL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releas
 RUN cd /usr/local/bin && curl -s "https://raw.githubusercontent.com/\
 kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash -s 3.6.1
 
+# Add the kam CLI (for bootstrapping gitops applications)
+RUN curl -SL -o /usr/local/bin/kam \
+    https://github.com/redhat-developer/kam/releases/download/$(curl -s "https://api.github.com/repos/redhat-developer/kam/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')/kam_linux_amd64 && \
+    chmod +x /usr/local/bin/kam
+
 USER jboss
 
 # this is done in the base image already (to support the demo shell images too), but for those that make
