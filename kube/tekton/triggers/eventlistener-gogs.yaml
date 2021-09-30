@@ -10,7 +10,7 @@ spec:
       bindings:
       - ref: gogs-triggerbinding
       template:
-        name: payment-trigger-template
+        ref: payment-trigger-template
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
