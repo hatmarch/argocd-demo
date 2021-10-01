@@ -114,6 +114,7 @@ main() {
   # ..and assign the pipeline service account that role in the dev project
   oc adm policy add-cluster-role-to-user -n $dev_prj kn-deployer system:serviceaccount:$cicd_prj:pipeline
   oc adm policy add-cluster-role-to-user -n $cicd_prj ns-creator -z pipeline
+  oc adm policy add-cluster-role-to-user -n $cicd_prj tekton-triggers-clusterrole -z pipeline
 
   # FIXME: Change to allow all serviceaccounts to pull from the cicd project
   # oc adm policy add-role-to-group system:image-puller system:serviceaccounts -n ${cicd_prj}
