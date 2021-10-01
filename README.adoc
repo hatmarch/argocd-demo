@@ -11,7 +11,21 @@ This repo contains all the scripts and code (as submodules) needed to create a d
 * Deployment on merging of pull request
 * Differential deployment using Kustomize
 
-TIP: There is a .devcontainer in this repo so if you have VisualStudio Code with remote extensions enabled, you can open repo folder in a container that has all the tools necessary to run this demo already installed.
+== Visual Studio Code Support ==
+
+There is a ``.devcontainer` in this repo so if you have VisualStudio Code with remote extensions enabled, you can open repo folder in a container that has all the tools necessary to run this demo already installed.
+
+=== AWS Access (ROSA) ===
+
+If you are using link:ROSA[https://aws.amazon.com/blogs/containers/announcing-red-hat-openshift-service-on-aws/] you can carry over your AWS credentials into the docker container has the devcontainer mounts your `~/.aws/` directory into the docker user (`jboss`) home directory.
+
+If you'd like to setup a "virtual AWS environment" then do the following:
+
+. Create a subdirectory of your `~/.aws/` directory where you would like your credentials to be stored
+** e.g. `~/.aws/burner/rosa`
+. On the host (and before running VSCode) set the `ARGODEMO_AWS_SUBDIRECTORY` environment varible to the relative path from the root `.aws` directory 
+** e.g. `export ARGODEMO_AWS_SUBDIRECTORY="burner/rosa"` 
+
 
 _This demo is still a work in progress.  See <<Still To Come,here>> for a list of items that are as of yet unfinished_ 
 

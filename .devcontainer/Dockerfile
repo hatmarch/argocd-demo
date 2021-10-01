@@ -10,6 +10,9 @@ RUN curl -SL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releas
 RUN cd /usr/local/bin && curl -s "https://raw.githubusercontent.com/\
 kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash -s 3.6.1
 
+# install rosa CLI
+RUN wget -O - https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/rosa/latest/rosa-linux.tar.gz | tar -xzvf - -C /usr/local/bin
+
 USER jboss
 
 # this is done in the base image already (to support the demo shell images too), but for those that make
