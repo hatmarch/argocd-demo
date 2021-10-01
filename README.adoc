@@ -17,7 +17,7 @@ There is a `.devcontainer` in this repo so if you have VisualStudio Code with re
 
 === AWS Access (ROSA) ===
 
-If you are using link:ROSA[https://aws.amazon.com/blogs/containers/announcing-red-hat-openshift-service-on-aws/] you can carry over your AWS credentials into the docker container has the devcontainer mounts your `~/.aws/` directory into the docker user (`jboss`) home directory.
+If you are using link:https://aws.amazon.com/blogs/containers/announcing-red-hat-openshift-service-on-aws/[ROSA] you can carry over your AWS credentials into the docker container has the devcontainer mounts your `~/.aws/` directory into the docker user (`jboss`) home directory.
 
 If you'd like to setup a "virtual AWS environment" then do the following:
 
@@ -26,15 +26,20 @@ If you'd like to setup a "virtual AWS environment" then do the following:
 . On the host (and before running VSCode) set the `ARGODEMO_AWS_SUBDIRECTORY` environment varible to the relative path from the root `.aws` directory 
 ** e.g. `export ARGODEMO_AWS_SUBDIRECTORY="burner/rosa"` 
 
-
-_This demo is still a work in progress.  See <<Still To Come,here>> for a list of items that are as of yet unfinished_ 
-
-[WARNING]
+[TIP]
+.ROSA cost control
 ====
-Make sure you run the following command before executing any of these commands listed in this demo.
+In the devcontainer you can use the installed functions `rosa-up` and `rosa-down` to turn on or off (respectively) the underlying instances for the cluster in question.
+
+If you don't want to provide a rosa cluster name, you can set the `ROSA_CLUSTER_NAME` environment variable on the host and this will be transfered to the container.  Equivalently, you can start VSCode like this (if your cluster name is `mwh-test`) from the root of the repo: 
+----
+ROSA_CLUSTER_NAME="mwh-test" code .
+----
+
+Bear in mind that you must be logged into `aws` cli and `rosa` to be able to fully execute these commands.  For instance, if you're not logged into `rosa` you'll likely see the following error.  You can get a login token using your Red Hat account link:https://console.redhat.com/openshift/token/rosa/show[here]
 
 ----
-source scripts/shell-setup.sh 
+E: Failed to create OCM connection: Not logged in, run the 'rosa login' command
 ----
 ====
 

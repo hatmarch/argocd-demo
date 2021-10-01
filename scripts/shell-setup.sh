@@ -60,3 +60,24 @@ aws-down() {
     aws ec2 stop-instances --instance-ids --region ${AWS_REGION} \
         $(aws ec2 describe-instances --region ${AWS_REGION} --query 'Reservations[*].Instances[*].{Instance:InstanceId}' --output text --filters "Name=tag-key,Values=kubernetes.io/cluster/${CLUSTER_NAME}-*" "Name=instance-state-name,Values=running") 
 }
+
+rosa-helper() {
+    local EC2_COMMAND=$1
+    local ROSA_NAME=${2:-${ROSA_CLUSTER_NAME}}
+    if [[ -z "$ROSA_NAME" ]]; then
+        echo "Must provide a rosa cluster id (e.g. mwh-test) either as parameter or in environment variable ROSA_CLUSTER_NAME"
+        echo "Available rosa clusters: $(rosa list clusters -o json | jq -r '.[0].name')"
+        return 1
+    fi
+
+    aws ec2 "${EC2_COMMAND}" --instance-ids \
+        $(aws ec2 describe-instances --filters Name="tag-key",Values="kubernetes.io/cluster/${ROSA_NAME}-*" --query 'Reservations[*].Instances[*].{Instance:InstanceId}' --output text)
+}
+
+rosa-up() {
+    rosa-helper "start-instances" $1
+}
+
+rosa-down() {
+    rosa-helper "stop-instances" $1
+}

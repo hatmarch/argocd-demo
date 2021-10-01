@@ -30,7 +30,8 @@
 	],
 	"containerEnv": {
 		"AWS_CONFIG_FILE": "/home/jboss/.aws/${env:ARGODEMO_AWS_SUBDIRECTORY}/config",
-		"AWS_CREDENTIALS_FILE": "/home/jboss/.aws/${env:ARGODEMO_AWS_SUBDIRECTORY}/credentials"
+		"AWS_CREDENTIALS_FILE": "/home/jboss/.aws/${env:ARGODEMO_AWS_SUBDIRECTORY}/credentials",
+		"ROSA_CLUSTER_NAME": "${env:ROSA_CLUSTER_NAME}"
 	},
 	"settings":{
 		"terminal.integrated.shell.linux": "/bin/zsh",
