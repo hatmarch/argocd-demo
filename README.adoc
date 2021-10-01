@@ -13,7 +13,7 @@ This repo contains all the scripts and code (as submodules) needed to create a d
 
 == Visual Studio Code Support ==
 
-There is a ``.devcontainer` in this repo so if you have VisualStudio Code with remote extensions enabled, you can open repo folder in a container that has all the tools necessary to run this demo already installed.
+There is a `.devcontainer` in this repo so if you have VisualStudio Code with remote extensions enabled, you can open repo folder in a container that has all the tools necessary to run this demo already installed.
 
 === AWS Access (ROSA) ===
 
