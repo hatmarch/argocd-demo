@@ -25,5 +25,5 @@ spec:
     targetPort: http-listener
   to:
     kind: "Service"
-    name: webhook
+    name: el-webhook
     weight: 100
