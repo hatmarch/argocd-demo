@@ -8,13 +8,12 @@
 ****
 Make sure you commands in any shell prior to the demo from within the root of the git repo for this demo:
 
+NOTE: You may need to first make sure the environment variable `ARGODEMO_AWS_SUBDIRECTORY` is defined (e.g. `ARGOCD_AWS_SUBDIRECTORY="burner/rosa"`)
+
 ----
-docker run -it -v ~/.kube:/home/jboss/.kube -v ~/.oh-my-zsh:/home/jboss/.oh-my-zsh -v $(pwd):/workspaces/argocd-demo -w /workspaces/argocd-demo quay.io/mhildenb/argocd-demo-shell /bin/zsh
+docker run -it -v ~/.kube:/home/jboss/.kube -v ~/.oh-my-zsh:/home/jboss/.oh-my-zsh -v $(pwd):/workspaces/argocd-demo -v ~/.aws:/home/jboss/.aws -e AWS_CONFIG_FILE="/home/jboss/.aws/${ARGODEMO_AWS_SUBDIRECTORY}/config" -e AWS_CREDENTIALS_FILE "/home/jboss/.aws/${ARGODEMO_AWS_SUBDIRECTORY}/credentials" -w /workspaces/argocd-demo --entrypoint /usr/bin/zsh quay.io/mhildenb/argocd-demo-shell
 ----
 
-Setup your windows something like this:
-
-image:screen-setup.png[]
 
 ****
 
@@ -146,7 +145,7 @@ echo '{"orderId": "12321","total": "232.23", "creditCard": {"number":"4232454678
 Instead of posting the order to kafka, instead, from the main shell, run the following command to call the service directly
 
 ----
-KN_ROUTE=
+KN_ROUTE=$(oc get ksvc payment -o jsonpath={'.status.url'})
 curl -X POST -H "Content-Type: application/json" -d @$DEMO_HOME/walkthrough-assets/order-payload.json $KN_ROUTE
 ----
 
@@ -182,7 +181,7 @@ kn service export payment -n argocd-demo-dev -o yaml
 . Run the following command to export the knative event source
 +
 ----
-oc get kafkasource kafka-source-orders --export -o yaml -n argocd-demo-dev
+oc get kafkasource kafka-source-orders -o yaml -n argocd-demo-dev
 ----
 +
 . Log into the in-cluster gogs repo
@@ -225,6 +224,14 @@ image:gitea-branches.png[]
 . Show the app differences now that it's out of sync
 . Open the staging topology view
 . Sync coolstore
++
+[WARNING]
+====
+Part of what gets changed is a `ConfigMap` with the name of a (patched) Kafka topic for orders and payments.  Changing the `ConfigMap`, however, will *not* cause the `order-service` pod to be restarted.  This currently needs to be done manually.
+
+If you don't restart the orders pod it will cause orders to be posted to the old `orders` topic which the Kafka Source for the new serverless `payment-service` is not configured to listen to
+====
++
 . When done purchase something else
 . Notice in the orders that the original order is still there (with our serverless message)
 
